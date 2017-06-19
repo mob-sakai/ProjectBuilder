@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 634bcac23bff432408fe1a4baba87f24, type: 3}
+  m_Name: Builder_iOS
+  m_EditorClassIdentifier: 
+  buildTarget: 13
+  developmentBuild: 0
+  defineSymbols: HOGEHOGE;TEST
+  productName: ProjectBuilder
+  companyName: DefaultCompany
+  applicationIdentifier: com.Company.ProductName
+  version: 1.0
+  versionCode: 137
+  iosSettings:
+    automaticallySign: 0
+    developerTeamId: 
+    codeSignIdentity: 
+    profileId: 
+    profileSpecifier: 
+    languages: jp;en
+    generateExportOptionPlist: 0
+    exportMethod: development
+    uploadBitcode: 0
+    uploadSymbols: 0
+    entitlementsFile: 
+    services: 
+    frameworks: 
+  androidSettings:
+    keystoreFile: 
+    keystorePassword: 
+    keystoreAliasName: 
+    keystoreAliasPassword: 
+  scenes: []

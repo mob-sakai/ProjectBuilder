@@ -1,0 +1,27 @@
+﻿using UnityEngine;
+using UnityEditor.Callbacks;
+using UnityEditor;
+using System.Collections;
+using System.Collections.Generic;
+
+/// <summary>
+/// Custom Project Builder.
+/// #NAME#
+/// </summary>
+public class #SCRIPTNAME# : Mobcast.Coffee.Build.ProjectBuilder
+{
+	/// <summary>
+	/// This method is called after applying project setting.
+	/// </summary>
+	protected override void OnApplySetting()
+	{
+	}
+
+	/// <summary>
+	/// This method is called after building the player.
+	/// </summary>
+	[PostProcessBuild]
+	protected static void OnPostProcessBuild(BuildTarget target, string path)
+	{
+	}
+}
