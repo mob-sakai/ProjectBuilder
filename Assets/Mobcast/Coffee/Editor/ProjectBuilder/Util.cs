@@ -31,7 +31,7 @@ namespace Mobcast.Coffee.Build
 		public static readonly Dictionary<string,string> executeArguments = new Dictionary<string, string>();
 
 		/// <summary>現在のプロジェクトディレクトリ.</summary>
-		public static readonly string projectDir = Application.dataPath.Replace("\\", "/").Replace("/Assets", "");
+		public static readonly string projectDir = Environment.CurrentDirectory.Replace('\\', '/');
 
 		/// <summary>出力バージョンファイルパス.ビルド成功時に、バンドルバージョンを出力します.</summary>
 		//		public static readonly string buildVersionPath = Path.Combine(projectDir, "BUILD_VERSION");
@@ -88,7 +88,7 @@ namespace Mobcast.Coffee.Build
 		public static void Open()
 		{
 			Selection.activeObject = Util.GetAssets<ProjectBuilder>()
-					.OrderBy(x => x.buildTarget == EditorUserBuildSettings.activeBuildTarget)
+					.OrderByDescending(x => x.buildTarget == EditorUserBuildSettings.activeBuildTarget)
 					.FirstOrDefault()
 			?? CreateBuilderAsset();
 		}

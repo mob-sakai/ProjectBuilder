@@ -42,7 +42,7 @@ Manage building configuration with asset.
 
 The following command option specifies the builder and executes the build.
 
-`-batchmode -buildTarget <ios|android> -executeMethod Mobcast.Coffee.ProjectBuilder.Build -builder <builder_name> [-devBuildNumber <number>] [-appendSymbols 'INCLUDE_SYMBOL;!EXCLUDE_SYMBOL;...']`
+`-batchmode -buildTarget <ios|android> -executeMethod Mobcast.Coffee.Build.ProjectBuilder.Build -builder <builder_name> [-devBuildNumber <number>] [-appendSymbols 'INCLUDE_SYMBOL;!EXCLUDE_SYMBOL;...']`
 
 Note: Do not use `-quit` option.
 
@@ -83,6 +83,12 @@ public class PlatformSettings_WebGL : IPlatformSettings
 
 
 ## Release Notes
+
+### ver.0.7.0:
+
+* Fix: 'Usage For CUI' was corrected.
+* Fix: Util.projectDir has error after compiling.
+* Fix: (iOS) When 'Automatically Sign' is enabled, ignore 'Provisioning Profile Id', etc...
 
 ### ver.0.6.0:
 

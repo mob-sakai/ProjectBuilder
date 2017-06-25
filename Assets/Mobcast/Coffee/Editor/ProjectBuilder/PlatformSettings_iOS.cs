@@ -125,7 +125,6 @@ namespace Mobcast.Coffee.Build
 			"com.apple.iCloud",
 		};
 
-		static readonly Regex s_RegAppleService = new Regex("(\\t*SystemCapabilities = {\\n)((.*{\\n.*\\n.*};\\n)+)", RegexOptions.Compiled);
 
 
 		public void Reset()
@@ -147,7 +146,10 @@ namespace Mobcast.Coffee.Build
 #endif
 #if UNITY_5_5_OR_NEWER
 			PlayerSettings.iOS.appleEnableAutomaticSigning = automaticallySign;
-			PlayerSettings.iOS.iOSManualProvisioningProfileID = profileId;
+			if(!automaticallySign)
+			{
+				PlayerSettings.iOS.iOSManualProvisioningProfileID = profileId;
+			}
 #endif
 		}
 
@@ -265,11 +267,12 @@ namespace Mobcast.Coffee.Build
 			proj.SetBuildProperty(targetGuid, "ENABLE_BITCODE", current.uploadBitcode ? "YES" : "NO");
 			if (!string.IsNullOrEmpty(current.developerTeamId))
 				proj.SetBuildProperty(targetGuid, "DEVELOPMENT_TEAM", current.developerTeamId);
-			if (!string.IsNullOrEmpty(current.profileId))
+			
+			if (!current.automaticallySign && !string.IsNullOrEmpty(current.profileId))
 				proj.SetBuildProperty(targetGuid, "PROVISIONING_PROFILE", current.profileId);
-			if (!string.IsNullOrEmpty(current.profileSpecifier))
+			if (!current.automaticallySign && !string.IsNullOrEmpty(current.profileSpecifier))
 				proj.SetBuildProperty(targetGuid, "PROVISIONING_PROFILE_SPECIFIER", current.profileSpecifier);
-			if (!string.IsNullOrEmpty(current.codeSignIdentity))
+			if (!current.automaticallySign && !string.IsNullOrEmpty(current.codeSignIdentity))
 				proj.SetBuildProperty(targetGuid, "CODE_SIGN_IDENTITY", current.codeSignIdentity);
 
 			// Set entitlement file.
@@ -291,12 +294,13 @@ namespace Mobcast.Coffee.Build
 			// Activate services.
 			if (!string.IsNullOrEmpty(current.services) && !string.IsNullOrEmpty(current.developerTeamId))
 			{
+				Regex reg = new Regex("(\\t*SystemCapabilities = {\\n)((.*{\\n.*\\n.*};\\n)+)");
 				string replaceText = 
 					string.Format("\nDevelopmentTeam = {0};\n$0{1}\n"
 						, current.developerTeamId
 						, current.services.Split(';').Select(x => x + " = {enabled = 1;};").Aggregate((a, b) => a + b)
 					);
-				proj.ReadFromString(s_RegAppleService.Replace(proj.WriteToString(), replaceText));
+				proj.ReadFromString(reg.Replace(proj.WriteToString(), replaceText));
 			}
 
 			// Save XCode project.
