@@ -77,12 +77,12 @@ namespace Mobcast.Coffee.Build
 		/// このメソッドで取得したGUIContentはキャッシュされます.
 		/// </summary>
 		/// <param name="label">コンテンツラベル.</param>
-		public static GUIContent GetContent(string label, Texture icon)
+		public static GUIContent GetContent(string label, Texture icon, string tooltip = "")
 		{
 			GUIContent c;
 			if (!s_ContentDictionary.TryGetValue(label, out c) || c == null)
 			{
-				c = new GUIContent(label, icon);
+				c = new GUIContent(label, icon, tooltip);
 				s_ContentDictionary[label] = c;
 			}
 			return c;
@@ -120,7 +120,7 @@ namespace Mobcast.Coffee.Build
 		{
 			s_StringBuilder.Length = 0;
 			displayedOptions
-				.Where(op => 0 != (op.Key & property.intValue))
+				.Where(op => (op.Key == property.intValue) || 0 != (op.Key & property.intValue))
 				.Select(op => op.Value)
 				.Aggregate(s_StringBuilder, (a, b) => a.AppendFormat("{0}, ", b));
 
@@ -149,13 +149,17 @@ namespace Mobcast.Coffee.Build
 				foreach (var op in displayedOptions)
 				{
 					var item = op;
-					bool active = maskable ? (0 != (current & item.Key)) : (current == item.Key);
+
+					bool active = maskable ? (item.Key == current || 0 != (current & item.Key)) : (current == item.Key);
 					menu.AddItem(EditorGUIEx.GetContent(item.Value), active, 
 						() =>
 						{
-							property.intValue = maskable
-								? (active ? (current & ~item.Key) : (current | item.Key))
-								: item.Key;
+							if(!active && maskable && item.Key == 0)
+								property.intValue = 0;
+							else if(maskable)
+								property.intValue = active ? (current & ~item.Key) : (current | item.Key);
+							else
+								property.intValue = item.Key;
 							property.serializedObject.ApplyModifiedProperties();
 						});
 				}

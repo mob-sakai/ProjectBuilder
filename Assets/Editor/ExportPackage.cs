@@ -9,7 +9,7 @@ namespace Mobcast.Coffee.Build
 			"Assets/Mobcast/Coffee/Editor/ProjectBuilder",
 		};
 
-		[MenuItem ("Coffee/Export Package/" + kPackageName)]
+		[MenuItem ("Export Package/" + kPackageName)]
 		[InitializeOnLoadMethod]
 		static void Export ()
 		{

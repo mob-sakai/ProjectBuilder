@@ -176,31 +176,33 @@ namespace Mobcast.Coffee.Build
 
 				// Signing.
 				EditorGUILayout.LabelField(EditorGUIEx.GetContent("Signing"), EditorStyles.boldLabel);
+				var spAutomaticallySign = settings.GetProperty("automaticallySign");
 				EditorGUI.indentLevel++;
 				{
-					EditorGUIEx.PropertyField(settings.GetProperty("automaticallySign"));
+					EditorGUIEx.PropertyField(spAutomaticallySign);
 					EditorGUIEx.PropertyField(settings.GetProperty("developerTeamId"));
-					EditorGUIEx.PropertyField(settings.GetProperty("codeSignIdentity"));
+					if (!spAutomaticallySign.boolValue)
+					{
+						EditorGUIEx.PropertyField(settings.GetProperty("codeSignIdentity"));
+						EditorGUIEx.PropertyField(settings.GetProperty("profileId"));
+						EditorGUIEx.PropertyField(settings.GetProperty("profileSpecifier"));
+					}
 				}
 				EditorGUI.indentLevel--;
 
-				// Provisioning Profile.
-				EditorGUILayout.LabelField(EditorGUIEx.GetContent("iOS Provisioning Profile"), EditorStyles.boldLabel);
-				EditorGUI.indentLevel++;
-				{
-					EditorGUIEx.PropertyField(settings.GetProperty("profileId"));
-					EditorGUIEx.PropertyField(settings.GetProperty("profileSpecifier"));
-				}
-				EditorGUI.indentLevel--;
 
 				// exportOptions.plist.
 				EditorGUILayout.LabelField(EditorGUIEx.GetContent("exportOptions.plist Setting"), EditorStyles.boldLabel);
 				EditorGUI.indentLevel++;
 				{
-					EditorGUIEx.PropertyField(settings.GetProperty("generateExportOptionPlist"), EditorGUIEx.GetContent("Generate Automatically"));
-					EditorGUIEx.TextFieldWithTemplate(settings.GetProperty("exportMethod"), s_AvailableExportMethods, false);
-					EditorGUIEx.PropertyField(settings.GetProperty("uploadBitcode"));
-					EditorGUIEx.PropertyField(settings.GetProperty("uploadSymbols"));
+					var spGenerate = settings.GetProperty("generateExportOptionPlist");
+					EditorGUIEx.PropertyField(spGenerate, EditorGUIEx.GetContent("Generate Automatically"));
+					if (spGenerate.boolValue)
+					{
+						EditorGUIEx.TextFieldWithTemplate(settings.GetProperty("exportMethod"), s_AvailableExportMethods, false);
+						EditorGUIEx.PropertyField(settings.GetProperty("uploadBitcode"));
+						EditorGUIEx.PropertyField(settings.GetProperty("uploadSymbols"));
+					}
 				}
 				EditorGUI.indentLevel--;
 			}

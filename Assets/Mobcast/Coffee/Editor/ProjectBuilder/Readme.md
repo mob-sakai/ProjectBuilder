@@ -3,9 +3,12 @@ ProjectBuilder
 
 ## Overview
 
-Manage building configuration with asset.
+A tool for easy automating and customizing build process for Unity.
+
+![image](https://user-images.githubusercontent.com/12690315/28651048-6b1903da-72ba-11e7-9dba-a82a3a021e1a.png)
 
 * Build target
+    * Build artifact is generated in `<project_dir>/build` directory or file.
 * Company name
 * Product name
 * Application identifier
@@ -21,13 +24,20 @@ Manage building configuration with asset.
 * Android platform support
     * Keystore infomation
 * iOS platform support
-    * XCode modifier.
+    * XCode modifier
         * Languages
         * Frameworks
         * Services
         * Entitlement file
     * Signing & Provisioning profile
     * Generate exportOptions.plist
+* AssetBundle build support
+    * Supports options
+    * Build artifacts are generated in `<project_dir>/AssetBundles` directory.
+
+
+
+
 
 
 
@@ -38,35 +48,49 @@ Manage building configuration with asset.
 
 
 
-## Usage For CUI
 
-The following command option specifies the builder and executes the build.
 
+
+
+## Usage
+
+1. Download [ProjectBuilder.unitypackage](https://github.com/mob-sakai/ProjectBuilder/raw/develop/ProjectBuilder.unitypackage) and install to your project.
+2. From the menu, click `Coffee` > `Project Builder`
+3. Input build configurations...
+4. Click buid button
+5. Build artifact is generated in `<project_dir>/build` directory or file.
+
+
+
+## Usage in commnad-line
+
+* The ProjectBuilder is accessible from the command line.  
+It is useful when using CI tools such as Jenkins.
+* The following command option executes the build with the specified builder.  
 `-batchmode -buildTarget <ios|android> -executeMethod Mobcast.Coffee.Build.ProjectBuilder.Build -builder <builder_name> [-devBuildNumber <number>] [-appendSymbols 'INCLUDE_SYMBOL;!EXCLUDE_SYMBOL;...']`
 
-Note: Do not use `-quit` option.
+* For example, The following command option executes the build for iOS with 'Develop_iOS' builder asset, with `DEBUG_MODE` symbol.  
+`-batchmode -buildTarget ios -executeMethod Mobcast.Coffee.Build.ProjectBuilder.Build -builder Develop_iOS -appendSymbols DEBUG_MODE`
 
+Note: **DO NOT USE** `-quit` option.  
 For other infomation, see this link : <https://docs.unity3d.com/Manual/CommandLineArguments.html>
 
 
 
 
-## Usage For Unity Cloud Build
+## Usage in Unity Cloud Build
 
-Type `Mobcast.Coffee.ProjectBuilder.PreExport` in `Advanced Settings -> Pre-Export Method Name`.
-
-Builder asset used for building will be selected automatically based on build setting label.
-
+1. Type `Mobcast.Coffee.ProjectBuilder.PreExport` in `Advanced Settings -> Pre-Export Method Name`.
+2. Builder asset used for building will be selected automatically based on build setting label.  
 For example, a build setting labeled 'Develop iOS' selects 'Develop_iOS' builder asset in project.
 
 
 
 
-## How To Add Platform For Build
+## How to add a platform to build?
 
-Implement `IPlatformSettings` interface as following for platforms you need.
-
-Add `System.Serializable` attribute to the class to be serializable.
+* Implement `IPlatformSettings` interface as following for platforms you need.
+* Add `System.Serializable` attribute to the class to be serializable.
 
 ```cs
 [System.Serializable]
@@ -81,8 +105,34 @@ public class PlatformSettings_WebGL : IPlatformSettings
 ```
 
 
+## How to customize the builder for your project?
+
+1. Click `Create Custom Project Builder Script`
+2. Implement the script.  
+The serialized field is not only displayed in the inspector, it can also be used in PostProcessBuild as following.
+![image](https://user-images.githubusercontent.com/12690315/28651867-64891a28-72bf-11e7-911a-f7f13a371def.png)
+```
+[PostProcessBuild]
+protected static void OnPostProcessBuild(BuildTarget target, string path)
+{
+    CustomProjectBuilder current = Util.currentBuilder as CustomProjectBuilder;
+    ...
+}
+```
+
+
+
+
+
+
 
 ## Release Notes
+
+### ver.0.8.0:
+
+* Feature: Build AssetBundle.
+    * Supports options.
+    * Build artifacts are generated in `<project_dir>/AssetBundles` directory.
 
 ### ver.0.7.0:
 

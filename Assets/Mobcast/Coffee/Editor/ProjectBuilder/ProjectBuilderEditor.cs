@@ -30,6 +30,12 @@ namespace Mobcast.Coffee.Build
 		static string[] s_AvailableScenes;
 		static List<ProjectBuilder> s_Builders;
 
+		static readonly Dictionary<int, string> s_BundleOptions =
+			System.Enum.GetValues(typeof(BuildAssetBundleOptions))
+				.Cast<int>()
+				.ToDictionary(x=>x,x=>System.Enum.GetName(typeof(BuildAssetBundleOptions),x));
+		
+
 		static readonly Dictionary<BuildTarget, IPlatformSettings> s_Platforms =
 			typeof(ProjectBuilder).Assembly
 				.GetTypes()
@@ -41,11 +47,11 @@ namespace Mobcast.Coffee.Build
 		static readonly Dictionary<int, string> s_BuildTargets = s_Platforms
 			.ToDictionary(x=>(int)x.Key, x=>x.Key.ToString());
 
-		public static Texture GetPlatformIcon(BuildTarget platform)
+		public static Texture GetPlatformIcon(ProjectBuilder builder)
 		{
-			return s_Platforms.ContainsKey(platform)
-				? s_Platforms[platform].icon
-				: EditorGUIUtility.FindTexture("BuildSettings.Editor.Small");
+			return !builder.assetBundleBuild && s_Platforms.ContainsKey(builder.buildTarget)
+				? s_Platforms[builder.buildTarget].icon
+					: EditorGUIUtility.FindTexture("BuildSettings.Editor.Small");
 		}
 
 		void Initialize()
@@ -91,8 +97,9 @@ namespace Mobcast.Coffee.Build
 					var b = roBuilderList.list[index] as ProjectBuilder;	//オブジェクト取得.
 
 
-					GUI.DrawTexture(new Rect(rect.x, rect.y, 16, rect.height), GetPlatformIcon(b.buildTarget));
-					GUI.Label(new Rect(rect.x + 16, rect.y + 2, rect.width - 16, rect.height-2), EditorGUIEx.GetContent(string.Format("{0} ({1})", b.name, b.productName)));
+					GUI.DrawTexture(new Rect(rect.x, rect.y+2, 16, 16), GetPlatformIcon(b));
+					string format = b.assetBundleBuild ? "{0} [AssetBundleBuild]" : "{0} ({1})";
+					GUI.Label(new Rect(rect.x + 16, rect.y + 2, rect.width - 16, rect.height-2), EditorGUIEx.GetContent(string.Format(format, b.name, b.productName)));
 				};
 			roBuilderList.headerHeight = 0;
 			roBuilderList.draggable = false;
@@ -112,7 +119,11 @@ namespace Mobcast.Coffee.Build
 			s_AvailableScenes = EditorBuildSettings.scenes.Select(x => Path.GetFileName(x.path)).ToArray();
 
 			// Get all builder assets in project.
-			s_Builders = new List<ProjectBuilder>(Util.GetAssets<ProjectBuilder>());
+			s_Builders = new List<ProjectBuilder>(
+				Util.GetAssets<ProjectBuilder>()
+					.OrderBy(b=>b.assetBundleBuild)
+					.ThenBy(b=>b.buildTarget)
+			);
 		}
 
 		/// <summary>
@@ -125,47 +136,52 @@ namespace Mobcast.Coffee.Build
 			serializedObject.Update();
 			var builder = target as ProjectBuilder;
 
-//			if (target == null)
-//				return;
-
 			// Draw properties in custom project builder.
 			DrawCustomProjectBuilder();
 
 			using (new EditorGUIEx.GroupScope("Build Setting"))
 			{
-				EditorGUIEx.PopupField(serializedObject.GetProperty("buildTarget"), s_BuildTargets);
-				EditorGUIEx.PropertyField(serializedObject.GetProperty("companyName"));
-				EditorGUIEx.PropertyField(serializedObject.GetProperty("productName"));
-				EditorGUIEx.PropertyField(serializedObject.GetProperty("applicationIdentifier"));
-				EditorGUIEx.PropertyField(serializedObject.GetProperty("developmentBuild"));
-				EditorGUIEx.PropertyField(serializedObject.GetProperty("defineSymbols"));
-
-				// Scenes In Build.
-				GUILayout.Space(6);
-				EditorGUILayout.LabelField("Enable/Disable Scenes In Build", EditorStyles.boldLabel);
-				roSceneList.serializedProperty = serializedObject.GetProperty("scenes");
-				roSceneList.DoLayoutList();
-
-				// Version.
-				EditorGUILayout.LabelField("Version Settings", EditorStyles.boldLabel);
-				EditorGUI.indentLevel++;
-				EditorGUIEx.PropertyField(serializedObject.GetProperty("version"));
-
-				// Internal version for the platform.
-				switch (builder.buildTarget)
+				EditorGUIEx.PropertyField(serializedObject.GetProperty("assetBundleBuild"));
+				if (builder.assetBundleBuild)
 				{
-					case BuildTarget.Android:
-						EditorGUIEx.PropertyField(serializedObject.GetProperty("versionCode"), EditorGUIEx.GetContent("Version Code"));
-						break;
-					case BuildTarget.iOS:
-						EditorGUIEx.PropertyField(serializedObject.GetProperty("versionCode"), EditorGUIEx.GetContent("Build Number"));
-						break;
+					EditorGUIEx.MaskField(serializedObject.GetProperty("bundleOptions"), s_BundleOptions);
 				}
-				EditorGUI.indentLevel--;
+				else
+				{
+					EditorGUIEx.PopupField(serializedObject.GetProperty("buildTarget"), s_BuildTargets);
+					EditorGUIEx.PropertyField(serializedObject.GetProperty("companyName"));
+					EditorGUIEx.PropertyField(serializedObject.GetProperty("productName"));
+					EditorGUIEx.PropertyField(serializedObject.GetProperty("applicationIdentifier"));
+					EditorGUIEx.PropertyField(serializedObject.GetProperty("developmentBuild"));
+					EditorGUIEx.PropertyField(serializedObject.GetProperty("defineSymbols"));
+
+					// Scenes In Build.
+					GUILayout.Space(6);
+					EditorGUILayout.LabelField("Enable/Disable Scenes In Build", EditorStyles.boldLabel);
+					roSceneList.serializedProperty = serializedObject.GetProperty("scenes");
+					roSceneList.DoLayoutList();
+
+					// Version.
+					EditorGUILayout.LabelField("Version Settings", EditorStyles.boldLabel);
+					EditorGUI.indentLevel++;
+					EditorGUIEx.PropertyField(serializedObject.GetProperty("version"));
+
+					// Internal version for the platform.
+					switch (builder.buildTarget)
+					{
+						case BuildTarget.Android:
+							EditorGUIEx.PropertyField(serializedObject.GetProperty("versionCode"), EditorGUIEx.GetContent("Version Code"));
+							break;
+						case BuildTarget.iOS:
+							EditorGUIEx.PropertyField(serializedObject.GetProperty("versionCode"), EditorGUIEx.GetContent("Build Number"));
+							break;
+					}
+					EditorGUI.indentLevel--;
+				}
 			}
 
 			// Drawer for target platform.
-			if (s_Platforms.ContainsKey(builder.buildTarget))
+			if (!builder.assetBundleBuild && s_Platforms.ContainsKey(builder.buildTarget))
 				s_Platforms[builder.buildTarget].DrawSetting(serializedObject);
 
 			// Control panel.
@@ -214,8 +230,14 @@ namespace Mobcast.Coffee.Build
 			GUILayout.FlexibleSpace();
 			using (new EditorGUILayout.VerticalScope("box"))
 			{
-				// Summary.
-				GUILayout.Label(new GUIContent(string.Format("{0} ver.{1} ({2})", builder.productName, builder.version, builder.versionCode), GetPlatformIcon(builder.buildTarget)), EditorStyles.largeLabel);
+				if (builder.assetBundleBuild)
+				{
+					GUILayout.Label(new GUIContent(string.Format("Build {0} AssetBundles", AssetDatabase.GetAllAssetBundleNames().Length), GetPlatformIcon(builder)), EditorStyles.largeLabel);
+				}
+				else
+				{
+					GUILayout.Label(new GUIContent(string.Format("Build {0} ver.{1} ({2})", builder.productName, builder.version, builder.versionCode), GetPlatformIcon(builder)), EditorStyles.largeLabel);
+				}
 
 				using (new EditorGUILayout.HorizontalScope())
 				{
@@ -238,7 +260,7 @@ namespace Mobcast.Coffee.Build
 				using (new EditorGUILayout.HorizontalScope())
 				{
 					// Build.
-					if (GUILayout.Button(EditorGUIEx.GetContent(string.Format("Build to '{0}'", builder.outputPath), EditorGUIUtility.FindTexture("preAudioPlayOff")), "LargeButton"))
+					if (GUILayout.Button(EditorGUIEx.GetContent(string.Format("Build to '{0}'", builder.outputPath), EditorGUIUtility.FindTexture("preAudioPlayOff"), builder.outputFullPath), "LargeButton"))
 					{
 						EditorApplication.delayCall += () => Util.StartBuild(builder, false);
 					}
@@ -249,17 +271,21 @@ namespace Mobcast.Coffee.Build
 						Util.RevealOutputInFinder(builder.outputFullPath);
 				}
 
-				// Build & Run.
-				if (GUILayout.Button(EditorGUIEx.GetContent("Build & Run", EditorGUIUtility.FindTexture("preAudioPlayOn")), "LargeButton"))
-				{
-					EditorApplication.delayCall += () => Util.StartBuild(builder, true);
-				}
-				EditorGUI.EndDisabledGroup();
 
-				// Create custom builder script.
-				if (Util.builderType == typeof(ProjectBuilder) && GUILayout.Button(EditorGUIEx.GetContent("Create Custom Project Builder Script")))
+				if (!builder.assetBundleBuild)
 				{
-					Util.CreateCustomProjectBuilder();
+					// Build & Run.
+					if (GUILayout.Button(EditorGUIEx.GetContent("Build & Run", EditorGUIUtility.FindTexture("preAudioPlayOn"), builder.outputFullPath), "LargeButton"))
+					{
+						EditorApplication.delayCall += () => Util.StartBuild(builder, true);
+					}
+					EditorGUI.EndDisabledGroup();
+
+					// Create custom builder script.
+					if (Util.builderType == typeof(ProjectBuilder) && GUILayout.Button(EditorGUIEx.GetContent("Create Custom Project Builder Script")))
+					{
+						Util.CreateCustomProjectBuilder();
+					}
 				}
 
 				// Available builders.

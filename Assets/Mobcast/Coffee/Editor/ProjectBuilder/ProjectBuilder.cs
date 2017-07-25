@@ -17,6 +17,15 @@ namespace Mobcast.Coffee.Build
 		//-------------------------------
 		//	ビルド概要.
 		//-------------------------------
+
+		/// <summary>Buid AssetBundle.</summary>
+		[Tooltip("Buid AssetBundle.")]
+		public bool assetBundleBuild;
+
+		/// <summary>AssetBundle options.</summary>
+		[Tooltip("AssetBundle options.")]
+		public BuildAssetBundleOptions bundleOptions;
+
 		/// <summary>ビルドプラットフォームを指定します.</summary>
 		[Tooltip("ビルドプラットフォームを指定します.")]
 		public BuildTarget buildTarget;
@@ -50,7 +59,9 @@ namespace Mobcast.Coffee.Build
 		{
 			get
 			{
-				if (buildTarget == BuildTarget.Android && !EditorUserBuildSettings.exportAsGoogleAndroidProject)
+				if(assetBundleBuild)
+					return "AssetBundles";
+				else if (buildTarget == BuildTarget.Android && !EditorUserBuildSettings.exportAsGoogleAndroidProject)
 					return "build.apk";
 				else
 					return "build";
@@ -130,6 +141,9 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		public bool DefineSymbol()
 		{
+			if (assetBundleBuild)
+				return false;
+			
 			var oldDefineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup);
 			List<string> symbolList = new List<string>(defineSymbols.Split(',', ';', '\n', '\r'));
 
@@ -164,6 +178,9 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		public void ApplySettings()
 		{
+			if (assetBundleBuild)
+				return;
+			
 			//ビルド情報を設定します.
 #if UNITY_5_6_OR_NEWER
 			PlayerSettings.SetApplicationIdentifier(buildTargetGroup, applicationIdentifier);
@@ -205,6 +222,14 @@ namespace Mobcast.Coffee.Build
 		/// <param name="autoRunPlayer">Build & Runモードでビルドします.</param>
 		public bool BuildPlayer(bool autoRunPlayer)
 		{
+			if (assetBundleBuild)
+			{
+				if (!Directory.Exists(outputPath))
+					Directory.CreateDirectory(outputPath);
+				BuildPipeline.BuildAssetBundles(outputPath, bundleOptions, buildTarget);
+				return true;
+			}
+
 			// Build options.
 			BuildOptions opt = developmentBuild ? (BuildOptions.Development & BuildOptions.AllowDebugging) : BuildOptions.None
 			                   | (autoRunPlayer ? BuildOptions.AutoRunPlayer : BuildOptions.None);
