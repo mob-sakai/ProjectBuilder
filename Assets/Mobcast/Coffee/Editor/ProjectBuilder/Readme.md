@@ -128,6 +128,10 @@ protected static void OnPostProcessBuild(BuildTarget target, string path)
 
 ## Release Notes
 
+### ver.0.8.1:
+
+* Fixed: Build button for AssetBundle is not displayed.
+
 ### ver.0.8.0:
 
 * Feature: Build AssetBundle.

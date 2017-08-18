@@ -256,7 +256,7 @@ namespace Mobcast.Coffee.Build
 				}
 
 				//ビルドターゲットが同じ場合のみビルド可能.
-				EditorGUI.BeginDisabledGroup(builder.buildTarget != EditorUserBuildSettings.activeBuildTarget);
+				EditorGUI.BeginDisabledGroup(!builder.assetBundleBuild && builder.buildTarget != EditorUserBuildSettings.activeBuildTarget);
 				using (new EditorGUILayout.HorizontalScope())
 				{
 					// Build.
