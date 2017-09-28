@@ -8,18 +8,22 @@ using UnityEngine;
 namespace Mobcast.Coffee.Build
 {
 	/// <summary>
-	/// Project builder post process.
+	/// Compile Utility.
 	/// </summary>
-	internal class CompileCallbacks : ScriptableSingleton<CompileCallbacks>
+	internal class Compile : ScriptableSingleton<Compile>
 	{
-		/// <summary>On finished compile callback.</summary>
-		[SerializeField] List<string> m_OnFinishedCompile = new List<string>();
-
 		static bool s_IsCompiling = false;
 
-		/// <summary>メソッドリストを全てコールします.</summary>
+		/// <summary>
+		/// On finished compile callback(static method only).
+		/// This field is 'Serialized'.
+		/// Therefore, callbacks are retained even after compile.
+		/// </summary>
+		[SerializeField] List<string> m_OnFinishedCompile = new List<string>();
+
 		void OnFinishedCompile(bool successfully)
 		{
+			// Invoke all callbacks.
 			foreach (var methodPath in m_OnFinishedCompile.ToArray())
 			{
 				try
@@ -38,8 +42,9 @@ namespace Mobcast.Coffee.Build
 		}
 
 		/// <summary>
-		/// Called on finished compile.
-		/// Supports static method only.
+		/// Called on next finished compile.
+		/// Supports only static method.
+		/// Note that this does not run in batch mode when doing a build with the -quit flag even if scripts are reloaded.
 		/// </summary>
 		public static event Action<bool> onFinishedCompile
 		{
@@ -80,7 +85,6 @@ namespace Mobcast.Coffee.Build
 						return;
 
 					s_IsCompiling = EditorApplication.isCompiling;
-//					Debug.Log("changed compile status " + s_IsCompiling);
 
 					// Compile has stopped with errors.
 					if (!s_IsCompiling)

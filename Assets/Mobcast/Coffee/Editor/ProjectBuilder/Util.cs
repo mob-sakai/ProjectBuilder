@@ -57,6 +57,7 @@ namespace Mobcast.Coffee.Build
 
 		/// <summary>On finished compile callback.</summary>
 		[SerializeField] bool m_BuildAndRun = false;
+		[SerializeField] bool m_BuildAssetBundle = false;
 
 
 		/// <summary>コンパイル完了時に呼び出されるメソッド.</summary>
@@ -81,16 +82,6 @@ namespace Mobcast.Coffee.Build
 
 			// When custom builder script exist, convert all builder assets.
 			EditorApplication.delayCall += UpdateBuilderAssets;
-		}
-
-		/// <summary>ProjectBuilderを起動します.いずれかのbuilderをアクティブにします.</summary>
-		[MenuItem("Coffee/Project Builder", false, 5000)]
-		public static void Open()
-		{
-			Selection.activeObject = Util.GetAssets<ProjectBuilder>()
-					.OrderByDescending(x => x.buildTarget == EditorUserBuildSettings.activeBuildTarget)
-					.FirstOrDefault()
-			?? CreateBuilderAsset();
 		}
 
 		/// <summary>Update builder assets.</summary>
@@ -136,11 +127,17 @@ namespace Mobcast.Coffee.Build
 		/// <summary>実行引数からビルダーを取得します.</summary>
 		public static ProjectBuilder GetBuilderFromExecuteArgument()
 		{
-			//引数にbuilderオプションが無かったらエラー.
 			string name;
 			var args = executeArguments;
-			if (!args.TryGetValue(Util.OPT_BUILDER, out name) && !args.TryGetValue(Util.OPT_CLOUD_BUILDER, out name))
+
+			//UnityCloudBuild対応
+			if(args.TryGetValue(Util.OPT_CLOUD_BUILDER, out name))
 			{
+				name = name.Replace("-", " ");
+			}
+			else if (!args.TryGetValue(Util.OPT_BUILDER, out name))
+			{
+				//引数にbuilderオプションが無かったらエラー.
 				throw new UnityException(ProjectBuilder.kLogType + "Error : You need to specify the builder as follows. '-builder <builder asset name>'");
 			}
 
@@ -164,7 +161,7 @@ namespace Mobcast.Coffee.Build
 				AssetDatabase.CreateFolder("Assets", "Editor");
 
 			// Open save file dialog.
-			string filename = AssetDatabase.GenerateUniqueAssetPath(string.Format("Assets/Editor/Builder_{0}.asset", EditorUserBuildSettings.activeBuildTarget));
+			string filename = AssetDatabase.GenerateUniqueAssetPath(string.Format("Assets/Editor/Default {0}.asset", EditorUserBuildSettings.activeBuildTarget));
 			string path = EditorUtility.SaveFilePanelInProject("Create New Builder Asset", Path.GetFileName(filename), "asset", "", "Assets/Editor");
 			if (path.Length == 0)
 				return null;
@@ -182,9 +179,6 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		public static void CreateCustomProjectBuilder()
 		{
-//			if (!Directory.Exists("Assets/Editor"))
-//				AssetDatabase.CreateFolder("Assets", "Editor");
-
 			// Select file name for custom project builder script.
 			string path = EditorUtility.SaveFilePanelInProject("Create Custom Project Builder", "CustomProjectBuilder", "cs", "", "Assets/Editor");
 			if (string.IsNullOrEmpty(path))
@@ -217,22 +211,20 @@ namespace Mobcast.Coffee.Build
 			);
 		}
 
-
-
-
 		/// <summary>
 		/// Registers the builder.
 		/// </summary>
-		public static void StartBuild(ProjectBuilder builder, bool buildAndRun)
+		public static void StartBuild(ProjectBuilder builder, bool buildAndRun, bool buildAssetBundle)
 		{
 			currentBuilder = builder;
 			instance.m_BuildAndRun = buildAndRun;
+			instance.m_BuildAssetBundle = buildAssetBundle;
 
 			// When script symbol has changed, resume to build after compile finished.
 			if (builder.DefineSymbol())
 			{
 				EditorUtility.DisplayProgressBar("Pre Compile to Build", "", 0.9f);
-				CompileCallbacks.onFinishedCompile += ResumeBuild;
+				Compile.onFinishedCompile += ResumeBuild;
 			}
 			else
 			{
@@ -245,7 +237,6 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		public static void ResumeBuild(bool compileSuccessfully)
 		{
-			//			Debug.Log("ResumeBuild: compile? " + EditorApplication.isCompiling);
 			bool success = false;
 			try
 			{
@@ -253,7 +244,10 @@ namespace Mobcast.Coffee.Build
 				if (compileSuccessfully && currentBuilder)
 				{
 					currentBuilder.ApplySettings();
-					success = currentBuilder.BuildPlayer(instance.m_BuildAndRun);
+					if(instance.m_BuildAssetBundle)
+						success = currentBuilder.BuildAssetBundles();
+					else
+						success = currentBuilder.BuildPlayer(instance.m_BuildAndRun);
 				}
 			}
 			catch (Exception ex)

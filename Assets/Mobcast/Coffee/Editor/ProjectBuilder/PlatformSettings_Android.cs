@@ -49,17 +49,17 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		public void DrawSetting(SerializedObject serializedObject)
 		{
-			var settings = serializedObject.GetProperty("androidSettings");
+			var settings = serializedObject.FindProperty("androidSettings");
 
 			using (new EditorGUIEx.GroupScope("Android Settings"))
 			{
 				EditorGUILayout.LabelField("Keystore", EditorStyles.boldLabel);
 				EditorGUI.indentLevel++;
 				{
-					EditorGUIEx.FilePathField(settings.GetProperty("keystoreFile"), "Select keystore file.", "", "");
-					EditorGUIEx.PropertyField(settings.GetProperty("keystorePassword"));
-					EditorGUIEx.PropertyField(settings.GetProperty("keystoreAliasName"), EditorGUIEx.GetContent("Alias"));
-					EditorGUIEx.PropertyField(settings.GetProperty("keystoreAliasPassword"), EditorGUIEx.GetContent("Alias Password"));
+					EditorGUIEx.FilePathField(settings.FindPropertyRelative("keystoreFile"), "Select keystore file.", "", "");
+					EditorGUILayout.PropertyField(settings.FindPropertyRelative("keystorePassword"));
+					EditorGUILayout.PropertyField(settings.FindPropertyRelative("keystoreAliasName"), new GUIContent("Alias"));
+					EditorGUILayout.PropertyField(settings.FindPropertyRelative("keystoreAliasPassword"), new GUIContent("Alias Password"));
 				}
 				EditorGUI.indentLevel--;
 			}

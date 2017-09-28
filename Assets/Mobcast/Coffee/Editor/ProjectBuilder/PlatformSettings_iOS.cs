@@ -159,7 +159,7 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		public void DrawSetting(SerializedObject serializedObject)
 		{
-			var settings = serializedObject.GetProperty("iosSettings");
+			var settings = serializedObject.FindProperty("iosSettings");
 
 			using (new EditorGUIEx.GroupScope("iOS Settings"))
 			{
@@ -167,41 +167,41 @@ namespace Mobcast.Coffee.Build
 				EditorGUILayout.LabelField("XCode Project", EditorStyles.boldLabel);
 				EditorGUI.indentLevel++;
 				{
-					EditorGUIEx.TextFieldWithTemplate(settings.GetProperty("languages"), s_AvailableLanguages, true);
-					EditorGUIEx.TextFieldWithTemplate(settings.GetProperty("frameworks"), s_AvailableFrameworks, true);
-					EditorGUIEx.TextFieldWithTemplate(settings.GetProperty("services"), s_AvailableServices, true);
-					EditorGUIEx.FilePathField(settings.GetProperty("entitlementsFile"), "Select entitlement file.", "", "entitlements");
+					EditorGUIEx.TextFieldWithTemplate(settings.FindPropertyRelative("languages"), s_AvailableLanguages, true);
+					EditorGUIEx.TextFieldWithTemplate(settings.FindPropertyRelative("frameworks"), s_AvailableFrameworks, true);
+					EditorGUIEx.TextFieldWithTemplate(settings.FindPropertyRelative("services"), s_AvailableServices, true);
+					EditorGUIEx.FilePathField(settings.FindPropertyRelative("entitlementsFile"), "Select entitlement file.", "", "entitlements");
 				}
 				EditorGUI.indentLevel--;
 
 				// Signing.
-				EditorGUILayout.LabelField(EditorGUIEx.GetContent("Signing"), EditorStyles.boldLabel);
-				var spAutomaticallySign = settings.GetProperty("automaticallySign");
+				EditorGUILayout.LabelField("Signing", EditorStyles.boldLabel);
+				var spAutomaticallySign = settings.FindPropertyRelative("automaticallySign");
 				EditorGUI.indentLevel++;
 				{
-					EditorGUIEx.PropertyField(spAutomaticallySign);
-					EditorGUIEx.PropertyField(settings.GetProperty("developerTeamId"));
+					EditorGUILayout.PropertyField(spAutomaticallySign);
+					EditorGUILayout.PropertyField(settings.FindPropertyRelative("developerTeamId"));
 					if (!spAutomaticallySign.boolValue)
 					{
-						EditorGUIEx.PropertyField(settings.GetProperty("codeSignIdentity"));
-						EditorGUIEx.PropertyField(settings.GetProperty("profileId"));
-						EditorGUIEx.PropertyField(settings.GetProperty("profileSpecifier"));
+						EditorGUILayout.PropertyField(settings.FindPropertyRelative("codeSignIdentity"));
+						EditorGUILayout.PropertyField(settings.FindPropertyRelative("profileId"));
+						EditorGUILayout.PropertyField(settings.FindPropertyRelative("profileSpecifier"));
 					}
 				}
 				EditorGUI.indentLevel--;
 
 
 				// exportOptions.plist.
-				EditorGUILayout.LabelField(EditorGUIEx.GetContent("exportOptions.plist Setting"), EditorStyles.boldLabel);
+				EditorGUILayout.LabelField("exportOptions.plist Setting", EditorStyles.boldLabel);
 				EditorGUI.indentLevel++;
 				{
-					var spGenerate = settings.GetProperty("generateExportOptionPlist");
-					EditorGUIEx.PropertyField(spGenerate, EditorGUIEx.GetContent("Generate Automatically"));
+					var spGenerate = settings.FindPropertyRelative("generateExportOptionPlist");
+					EditorGUILayout.PropertyField(spGenerate, new GUIContent("Generate Automatically"));
 					if (spGenerate.boolValue)
 					{
-						EditorGUIEx.TextFieldWithTemplate(settings.GetProperty("exportMethod"), s_AvailableExportMethods, false);
-						EditorGUIEx.PropertyField(settings.GetProperty("uploadBitcode"));
-						EditorGUIEx.PropertyField(settings.GetProperty("uploadSymbols"));
+						EditorGUIEx.TextFieldWithTemplate(settings.FindPropertyRelative("exportMethod"), s_AvailableExportMethods, false);
+						EditorGUILayout.PropertyField(settings.FindPropertyRelative("uploadBitcode"));
+						EditorGUILayout.PropertyField(settings.FindPropertyRelative("uploadSymbols"));
 					}
 				}
 				EditorGUI.indentLevel--;

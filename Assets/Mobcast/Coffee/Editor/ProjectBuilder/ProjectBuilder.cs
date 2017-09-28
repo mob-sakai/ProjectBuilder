@@ -14,17 +14,26 @@ namespace Mobcast.Coffee.Build
 	{
 		public const string kLogType = "#### [ProjectBuilder] ";
 
+
 		//-------------------------------
 		//	ビルド概要.
 		//-------------------------------
 
+		/// <summary>Buid Application.</summary>
+		[Tooltip("Buid Application.")]
+		public bool buildApplication = true;
+
 		/// <summary>Buid AssetBundle.</summary>
 		[Tooltip("Buid AssetBundle.")]
-		public bool assetBundleBuild;
+		public bool buildAssetBundle;
+
+		/// <summary>copyToStreamingAssets.</summary>
+		[Tooltip("copyToStreamingAssets.")]
+		public bool copyToStreamingAssets;
 
 		/// <summary>AssetBundle options.</summary>
 		[Tooltip("AssetBundle options.")]
-		public BuildAssetBundleOptions bundleOptions;
+		public BundleOptions bundleOptions;
 
 		/// <summary>ビルドプラットフォームを指定します.</summary>
 		[Tooltip("ビルドプラットフォームを指定します.")]
@@ -59,12 +68,19 @@ namespace Mobcast.Coffee.Build
 		{
 			get
 			{
-				if(assetBundleBuild)
-					return "AssetBundles";
-				else if (buildTarget == BuildTarget.Android && !EditorUserBuildSettings.exportAsGoogleAndroidProject)
+				if (buildTarget == BuildTarget.Android && !EditorUserBuildSettings.exportAsGoogleAndroidProject)
 					return "build.apk";
 				else
 					return "build";
+			}
+		}
+
+		/// <summary>アセットバンドルビルドパス.</summary>
+		public string bundleOutputPath
+		{
+			get
+			{
+				return "AssetBundles/" + buildTarget;
 			}
 		}
 
@@ -94,6 +110,13 @@ namespace Mobcast.Coffee.Build
 			public string name;
 		}
 
+		public enum BundleOptions
+		{
+			LZMA = BuildAssetBundleOptions.None,
+			LZ4 = BuildAssetBundleOptions.ChunkBasedCompression,
+			Uncompressed = BuildAssetBundleOptions.UncompressedAssetBundle,
+		}
+
 		public SceneSetting[] scenes = new SceneSetting[]{ };
 
 
@@ -104,11 +127,6 @@ namespace Mobcast.Coffee.Build
 		protected virtual void OnApplySetting()
 		{
 		}
-
-		//		/// <summary>ビルド後コールバック.</summary>
-		//		protected virtual void OnPostBuildPlayer()
-		//		{
-		//		}
 
 
 		//-------------------------------
@@ -141,9 +159,6 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		public bool DefineSymbol()
 		{
-			if (assetBundleBuild)
-				return false;
-			
 			var oldDefineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup);
 			List<string> symbolList = new List<string>(defineSymbols.Split(',', ';', '\n', '\r'));
 
@@ -178,9 +193,6 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		public void ApplySettings()
 		{
-			if (assetBundleBuild)
-				return;
-			
 			//ビルド情報を設定します.
 #if UNITY_5_6_OR_NEWER
 			PlayerSettings.SetApplicationIdentifier(buildTargetGroup, applicationIdentifier);
@@ -203,8 +215,8 @@ namespace Mobcast.Coffee.Build
 
 			// Scene Settings.
 			EditorBuildSettings.scenes = EditorBuildSettings.scenes
-				.Where(x => x.enabled || scenes.Any(y=>y.enable && y.name == Path.GetFileName(x.path)))
-				.Where(x=>!scenes.Any(y=>!y.enable && y.name == Path.GetFileName(x.path)))
+				.Where(x => x.enabled || scenes.Any(y => y.enable && y.name == Path.GetFileName(x.path)))
+				.Where(x => !scenes.Any(y => !y.enable && y.name == Path.GetFileName(x.path)))
 				.ToArray();
 
 			//Platform settings.
@@ -216,42 +228,76 @@ namespace Mobcast.Coffee.Build
 		}
 
 		/// <summary>
+		/// アセットバンドルをビルドします.
+		/// </summary>
+		/// <returns>ビルドに成功していればtrueを、それ以外はfalseを返す.</returns>
+		public bool BuildAssetBundles()
+		{
+			try
+			{
+				UnityEngine.Debug.Log(kLogType + "BuildAssetBundles is started.");
+
+				Directory.CreateDirectory(bundleOutputPath);
+				BuildAssetBundleOptions opt = (BuildAssetBundleOptions)bundleOptions | BuildAssetBundleOptions.DeterministicAssetBundle;
+				BuildPipeline.BuildAssetBundles(bundleOutputPath, opt, buildTarget);
+
+				if (copyToStreamingAssets)
+				{
+					var copyPath = Path.Combine(Application.streamingAssetsPath, bundleOutputPath);
+					Directory.CreateDirectory(copyPath);
+
+					if (Directory.Exists(copyPath))
+						FileUtil.DeleteFileOrDirectory(copyPath);
+					
+					FileUtil.CopyFileOrDirectory(bundleOutputPath, copyPath);
+				}
+				UnityEngine.Debug.Log(kLogType + "BuildAssetBundles is finished successfuly.");
+				return true;
+			}
+			catch(System.Exception e)
+			{
+				UnityEngine.Debug.LogError(kLogType + "BuildAssetBundles is failed : " + e.Message);
+				return false;
+			}
+		}
+
+		/// <summary>
 		/// BuildPipelineによるビルドを実行します.
 		/// </summary>
 		/// <returns>ビルドに成功していればtrueを、それ以外はfalseを返す.</returns>
 		/// <param name="autoRunPlayer">Build & Runモードでビルドします.</param>
 		public bool BuildPlayer(bool autoRunPlayer)
 		{
-			if (assetBundleBuild)
+			if (buildAssetBundle && !BuildAssetBundles())
 			{
-				if (!Directory.Exists(outputPath))
-					Directory.CreateDirectory(outputPath);
-				BuildPipeline.BuildAssetBundles(outputPath, bundleOptions, buildTarget);
-				return true;
-			}
-
-			// Build options.
-			BuildOptions opt = developmentBuild ? (BuildOptions.Development & BuildOptions.AllowDebugging) : BuildOptions.None
-			                   | (autoRunPlayer ? BuildOptions.AutoRunPlayer : BuildOptions.None);
-
-			// Scenes to build.
-			string[] scenes = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
-
-			// Start build.
-			UnityEngine.Debug.Log(kLogType + "BuildPlayer is started. Defined symbols : " + PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup));
-			string errorMsg = BuildPipeline.BuildPlayer(scenes, outputFullPath, buildTarget, opt);
-
-			if (string.IsNullOrEmpty(errorMsg))
-			{
-				UnityEngine.Debug.Log(kLogType + "BuildPlayer is finished successfuly.");
-				Util.RevealOutputInFinder(outputFullPath);
-				return true;
-			}
-			else
-			{
-				UnityEngine.Debug.LogError(kLogType + "BuildPlayer is failed : " + errorMsg);
 				return false;
 			}
+
+			if (buildApplication)
+			{
+				// Build options.
+				BuildOptions opt = developmentBuild ? (BuildOptions.Development & BuildOptions.AllowDebugging) : BuildOptions.None
+				                   | (autoRunPlayer ? BuildOptions.AutoRunPlayer : BuildOptions.None);
+
+				// Scenes to build.
+				string[] scenesToBuild = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
+
+				// Start build.
+				UnityEngine.Debug.Log(kLogType + "BuildPlayer is started. Defined symbols : " + PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup));
+				string errorMsg = BuildPipeline.BuildPlayer(scenesToBuild, outputFullPath, buildTarget, opt);
+
+				if (string.IsNullOrEmpty(errorMsg))
+				{
+					UnityEngine.Debug.Log(kLogType + "BuildPlayer is finished successfuly.");
+					Util.RevealOutputInFinder(outputFullPath);
+				}
+				else
+				{
+					UnityEngine.Debug.LogError(kLogType + "BuildPlayer is failed : " + errorMsg);
+					return false;
+				}
+			}
+			return true;
 		}
 
 		/// <summary>
@@ -259,10 +305,10 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		static void Build()
 		{
-			Util.StartBuild(Util.GetBuilderFromExecuteArgument(), false);
+			Util.StartBuild(Util.GetBuilderFromExecuteArgument(), false, false);
 		}
 
-#if UNITY_CLOUD_BUILD
+		#if UNITY_CLOUD_BUILD
 		/// <summary>
 		/// Pre-export method for Unity Cloud Build.
 		/// </summary>
