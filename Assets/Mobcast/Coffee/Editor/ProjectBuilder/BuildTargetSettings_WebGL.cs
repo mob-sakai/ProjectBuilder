@@ -10,9 +10,9 @@ using UnityEditor.Callbacks;
 namespace Mobcast.Coffee.Build
 {
 	[System.Serializable]
-	public class PlatformSettings_WebGL : IPlatformSettings
+	public class BuildTargetSettings_WebGL : IBuildTargetSettings
 	{
-		public BuildTarget platform{get{ return BuildTarget.WebGL;}}
+		public BuildTarget buildTarget{get{ return BuildTarget.WebGL;}}
 
 		public Texture icon{get{ return EditorGUIUtility.FindTexture("BuildSettings.WebGL.Small");}}
 

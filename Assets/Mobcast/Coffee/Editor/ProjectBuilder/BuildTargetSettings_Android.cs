@@ -6,9 +6,10 @@ using UnityEngine;
 namespace Mobcast.Coffee.Build
 {
 	[System.Serializable]
-	public class PlatformSettings_Android : IPlatformSettings
+	public class BuildTargetSettings_Android : IBuildTargetSettings
 	{
-		public BuildTarget platform{get{ return BuildTarget.Android;}}
+		public BuildTarget buildTarget{get{ return BuildTarget.Android;}}
+
 		public Texture icon{get{ return EditorGUIUtility.FindTexture("BuildSettings.Android.Small");}}
 
 		/// <summary>Keystore file path.</summary>

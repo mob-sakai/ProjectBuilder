@@ -13,9 +13,10 @@ using UnityEditor.iOS.Xcode;
 namespace Mobcast.Coffee.Build
 {
 	[System.Serializable]
-	public class PlatformSettings_iOS : IPlatformSettings
+	public class BuildTargetSettings_iOS : IBuildTargetSettings
 	{
-		public BuildTarget platform{get{ return BuildTarget.iOS;}}
+		public BuildTarget buildTarget{get{ return BuildTarget.iOS;}}
+
 		public Texture icon{get{ return EditorGUIUtility.FindTexture("BuildSettings.iPhone.Small");}}
 
 		/// <summary>Enable automatically sign.</summary>

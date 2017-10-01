@@ -16,29 +16,17 @@ namespace Mobcast.Coffee.Build
 
 		/// <summary>
 		/// On finished compile callback(static method only).
-		/// This field is 'Serialized'.
+		/// This field is 'Serialized' in ScriptableSingleton.
 		/// Therefore, callbacks are retained even after compile.
 		/// </summary>
 		[SerializeField] List<string> m_OnFinishedCompile = new List<string>();
 
-		void OnFinishedCompile(bool successfully)
+		/// <summary>
+		/// Request script compile.
+		/// </summary>
+		public static void RequestCompile()
 		{
-			// Invoke all callbacks.
-			foreach (var methodPath in m_OnFinishedCompile.ToArray())
-			{
-				try
-				{
-					string className = Path.GetFileNameWithoutExtension(methodPath);
-					string methodName = Path.GetExtension(methodPath).TrimStart('.');
-					MethodInfo ret = Type.GetType(className).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
-					ret.Invoke(null, new object[]{ successfully });
-				}
-				catch (Exception e)
-				{
-					Debug.LogError(methodPath + " cannnot call. " + e.Message);
-				}
-				m_OnFinishedCompile.Remove(methodPath);
-			}
+			UnityEditorInternal.InternalEditorUtility.RequestScriptReload();
 		}
 
 		/// <summary>
@@ -91,6 +79,26 @@ namespace Mobcast.Coffee.Build
 						instance.OnFinishedCompile(false);
 				};
 			};
+		}
+
+		void OnFinishedCompile(bool successfully)
+		{
+			// Invoke all callbacks.
+			foreach (var methodPath in m_OnFinishedCompile.ToArray())
+			{
+				try
+				{
+					string className = Path.GetFileNameWithoutExtension(methodPath);
+					string methodName = Path.GetExtension(methodPath).TrimStart('.');
+					MethodInfo ret = Type.GetType(className).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+					ret.Invoke(null, new object[]{ successfully });
+				}
+				catch (Exception e)
+				{
+					Debug.LogError(methodPath + " cannnot call. " + e.Message);
+				}
+				m_OnFinishedCompile.Remove(methodPath);
+			}
 		}
 	}
 }

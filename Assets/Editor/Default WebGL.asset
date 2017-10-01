@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf9e5a5972d8420ab6e88e89471f4a2, type: 3}
+  m_Name: Default WebGL
+  m_EditorClassIdentifier: 
+  buildApplication: 1
+  buildAssetBundle: 0
+  copyToStreamingAssets: 0
+  bundleOptions: 0
+  buildTarget: 20
+  developmentBuild: 0
+  defineSymbols: HOGEHOGE;TEST;aho
+  productName: ProjectBuilder
+  companyName: DefaultCompany
+  applicationIdentifier: com.Company.ProductName
+  version: 1.0
+  versionCode: 0
+  iosSettings:
+    automaticallySign: 0
+    developerTeamId: 
+    codeSignIdentity: 
+    profileId: 
+    profileSpecifier: 
+    languages: jp;en
+    generateExportOptionPlist: 0
+    exportMethod: development
+    uploadBitcode: 0
+    uploadSymbols: 0
+    entitlementsFile: 
+    services: 
+    frameworks: 
+  androidSettings:
+    keystoreFile: 
+    keystorePassword: 
+    keystoreAliasName: 
+    keystoreAliasPassword: 
+  scenes: []
