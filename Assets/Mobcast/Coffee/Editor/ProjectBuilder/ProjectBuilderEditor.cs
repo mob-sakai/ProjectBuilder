@@ -44,7 +44,7 @@ namespace Mobcast.Coffee.Build
 		static readonly int[] s_BuildTargetValues = s_BuildTargetSettings.Keys.Cast<int>().ToArray();
 		static readonly GUIContent[] s_BuildTargetLabels = s_BuildTargetSettings.Keys.Select(x => new GUIContent(x.ToString())).ToArray();
 		
-		public static Texture GetPlatformIcon(ProjectBuilder builder)
+		public static Texture GetBuildTargetIcon(ProjectBuilder builder)
 		{
 			return builder.buildApplication && s_BuildTargetSettings.ContainsKey(builder.buildTarget)
 				? s_BuildTargetSettings[builder.buildTarget].icon
@@ -113,13 +113,13 @@ namespace Mobcast.Coffee.Build
 				if (!b)
 					return;
 
-				GUI.DrawTexture(new Rect(rect.x, rect.y + 2, 16, 16), GetPlatformIcon(b));
+				GUI.DrawTexture(new Rect(rect.x, rect.y + 2, 16, 16), GetBuildTargetIcon(b));
 				GUI.Label(new Rect(rect.x + 16, rect.y + 2, rect.width - 16, rect.height - 2), new GUIContent(string.Format("{0} ({1})", b.name, b.productName)));
 			};
 			roBuilderList.headerHeight = 0;
 			roBuilderList.draggable = false;
 
-			contentTitle = EditorGUIUtility.ObjectContent(dummy, typeof(ProjectBuilder));
+			contentTitle = new GUIContent(Util.GetAssets<Texture2D>(typeof(ProjectBuilder).Name + " Icon").FirstOrDefault());
 			DestroyImmediate(dummy);
 		}
 		//---- ▲ GUIキャッシュ ▲ ----
@@ -301,7 +301,7 @@ namespace Mobcast.Coffee.Build
 					EditorGUI.indentLevel++;
 					EditorGUILayout.PropertyField(serializedObject.FindProperty("version"));
 
-					// Internal version for the platform.
+					// Internal version for the build target.
 					switch ((BuildTarget)spBuildTarget.intValue)
 					{
 						case BuildTarget.Android:
@@ -336,7 +336,7 @@ namespace Mobcast.Coffee.Build
 
 		/// <summary>
 		/// プラットフォームごとのビルド設定を描画します.
-		/// Draws the platform settings.
+		/// Draw build target settings.
 		/// </summary>
 		void DrawBuildTragetSettings()
 		{
@@ -360,11 +360,11 @@ namespace Mobcast.Coffee.Build
 			{
 				if (builder.buildApplication)
 				{
-					GUILayout.Label(new GUIContent(string.Format("{0} ver.{1} ({2})", builder.productName, builder.version, builder.versionCode), GetPlatformIcon(builder)), EditorStyles.largeLabel);
+					GUILayout.Label(new GUIContent(string.Format("{0} ver.{1} ({2})", builder.productName, builder.version, builder.versionCode), GetBuildTargetIcon(builder)), EditorStyles.largeLabel);
 				}
 				else if (builder.buildAssetBundle)
 				{
-					GUILayout.Label(new GUIContent(string.Format("{0} AssetBundles", AssetDatabase.GetAllAssetBundleNames().Length), GetPlatformIcon(builder)), EditorStyles.largeLabel);
+					GUILayout.Label(new GUIContent(string.Format("{0} AssetBundles", AssetDatabase.GetAllAssetBundleNames().Length), GetBuildTargetIcon(builder)), EditorStyles.largeLabel);
 				}
 
 				using (new EditorGUILayout.HorizontalScope())

@@ -216,7 +216,7 @@ namespace Mobcast.Coffee.Build
 		public static void OnPostprocessBuild(BuildTarget buildTarget, string path)
 		{
 #if UNITY_IOS
-			PlatformSettings_iOS current = Util.currentBuilder.iosSettings;
+			BuildTargetSettings_iOS current = Util.currentBuilder.iosSettings;
 			if (buildTarget != BuildTarget.iOS || current == null)
 				return;
 

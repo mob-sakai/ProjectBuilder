@@ -49,7 +49,7 @@ A tool for easy automating and customizing build process for Unity.
 
 ## Usage
 
-1. Download [ProjectBuilder.unitypackage](https://github.com/mob-sakai/ProjectBuilder/raw/develop/ProjectBuilder.unitypackage) and install to your project.
+1. Download [ProjectBuilder.unitypackage](https://github.com/mob-sakai/ProjectBuilder/raw/master/ProjectBuilder.unitypackage) and install to your project.
 1. From the menu, click `Coffee` > `Project Builder`
 1. Input build configurations.
 1. Click `Buid` button to build application.
@@ -133,6 +133,10 @@ public BuildTargetSettings_WebGL webGlSettings = new BuildTargetSettings_WebGL()
 
 
 ## Release Notes
+
+### ver.0.9.2:
+
+* Fixed: Builder icon is not found.
 
 ### ver.0.9.1:
 

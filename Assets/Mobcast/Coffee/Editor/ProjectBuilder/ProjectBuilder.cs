@@ -146,7 +146,7 @@ namespace Mobcast.Coffee.Build
 			version = PlayerSettings.bundleVersion;
 			defineSymbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup);
 
-			//Platform settings.
+			// Build target settings.
 			androidSettings.Reset();
 			iosSettings.Reset();
 		}
@@ -220,7 +220,7 @@ namespace Mobcast.Coffee.Build
 				.Where(x => !scenes.Any(y => !y.enable && y.name == Path.GetFileName(x.path)))
 				.ToArray();
 
-			//Platform settings.
+			// Build target settings.
 			iosSettings.ApplySettings(this);
 			androidSettings.ApplySettings(this);
 

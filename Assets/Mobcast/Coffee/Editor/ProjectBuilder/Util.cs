@@ -93,6 +93,10 @@ namespace Mobcast.Coffee.Build
 			Texture2D icon = GetAssets<Texture2D>(typeof(ProjectBuilder).Name + " Icon")
 				.FirstOrDefault();
 
+			// 
+			if (builderType == typeof(ProjectBuilder))
+				return;
+
 			// Set Icon
 			if (icon && builderScript && miSetIconForObject != null)
 			{
@@ -100,18 +104,14 @@ namespace Mobcast.Coffee.Build
 				EditorUtility.SetDirty(builderScript);
 			}
 
-			// If custom builder script exists, update script reference for builders.
-			if (builderType != typeof(ProjectBuilder))
+			// Update script reference for builders.
+			foreach (var builder in GetAssets<ProjectBuilder>())
 			{
-				foreach (var builder in GetAssets<ProjectBuilder>())
-				{
-					// Convert 'm_Script' to custom builder script.
-
-					var so = new SerializedObject(builder);
-					so.Update();
-					so.FindProperty("m_Script").objectReferenceValue = builderScript;
-					so.ApplyModifiedProperties();
-				}
+				// Convert 'm_Script' to custom builder script.
+				var so = new SerializedObject(builder);
+				so.Update();
+				so.FindProperty("m_Script").objectReferenceValue = builderScript;
+				so.ApplyModifiedProperties();
 			}
 
 			AssetDatabase.Refresh();
@@ -147,9 +147,9 @@ namespace Mobcast.Coffee.Build
 			{
 				throw new UnityException(ProjectBuilder.kLogType + "Error : The specified builder could not be found. " + name);
 			}
-			else if (builder.buildTarget != EditorUserBuildSettings.activeBuildTarget)
+			else if (builder.buildApplication && builder.buildTarget != EditorUserBuildSettings.activeBuildTarget)
 			{
-				throw new UnityException(ProjectBuilder.kLogType + "Error : The specified builder's platform is not " + EditorUserBuildSettings.activeBuildTarget);
+				throw new UnityException(ProjectBuilder.kLogType + "Error : The specified builder's build target is not " + EditorUserBuildSettings.activeBuildTarget);
 			}
 			return builder;
 		}
