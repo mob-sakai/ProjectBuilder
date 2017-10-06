@@ -134,6 +134,10 @@ public BuildTargetSettings_WebGL webGlSettings = new BuildTargetSettings_WebGL()
 
 ## Release Notes
 
+### ver.0.9.3:
+
+* Fixed: AssetBundle output path is incorrect.
+
 ### ver.0.9.2:
 
 * Fixed: Builder icon is not found.

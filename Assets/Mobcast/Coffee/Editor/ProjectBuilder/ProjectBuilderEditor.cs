@@ -98,13 +98,21 @@ namespace Mobcast.Coffee.Build
 			// Builder list.
 			roBuilderList = new ReorderableList(s_BuildersInProject, typeof(ProjectBuilder));
 			roBuilderList.onSelectCallback = (list) => Selection.activeObject = list.list[list.index] as ProjectBuilder;
-			roBuilderList.onAddCallback += (list) => Util.CreateBuilderAsset();
+			roBuilderList.onAddCallback += (list) =>
+			{
+				EditorApplication.delayCall += () =>
+				{
+					Util.CreateBuilderAsset();
+					OnSelectionChanged();
+				};
+			};
 			roBuilderList.onRemoveCallback += (list) =>
 			{
 				EditorApplication.delayCall += () =>
 				{
 					AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(list.list[list.index] as ProjectBuilder));
 					AssetDatabase.Refresh();
+					OnSelectionChanged();
 				};
 			};
 			roBuilderList.drawElementCallback += (rect, index, isActive, isFocused) =>
@@ -154,7 +162,8 @@ namespace Mobcast.Coffee.Build
 			// Get all builder assets in project.
 			s_BuildersInProject = new List<ProjectBuilder>(
 				Util.GetAssets<ProjectBuilder>()
-				.OrderBy(b => b.buildTarget)
+				.OrderBy(b => b.buildApplication)
+				.ThenBy(b => b.buildTarget)
 			);
 
 			targets = 0 < builders.Length
@@ -335,7 +344,7 @@ namespace Mobcast.Coffee.Build
 		}
 
 		/// <summary>
-		/// プラットフォームごとのビルド設定を描画します.
+		/// ターゲットごとのビルド設定を描画します.
 		/// Draw build target settings.
 		/// </summary>
 		void DrawBuildTragetSettings()
@@ -384,7 +393,7 @@ namespace Mobcast.Coffee.Build
 				}
 
 				//ビルドターゲットが同じ場合のみビルド可能.
-				EditorGUI.BeginDisabledGroup(builder.buildTarget != EditorUserBuildSettings.activeBuildTarget);
+				EditorGUI.BeginDisabledGroup(builder.actualBuildTarget != EditorUserBuildSettings.activeBuildTarget);
 
 				using (new EditorGUILayout.HorizontalScope())
 				{
@@ -420,13 +429,13 @@ namespace Mobcast.Coffee.Build
 						Util.RevealOutputInFinder(builder.outputFullPath);
 					EditorGUI.EndDisabledGroup();
 				}
-				EditorGUI.EndDisabledGroup();
 
 				// Build & Run.
 				if (GUILayout.Button(new GUIContent("Build & Run", EditorGUIUtility.FindTexture("preAudioPlayOn")), "LargeButton"))
 				{
 					EditorApplication.delayCall += () => Util.StartBuild(builder, true, false);
 				}
+				EditorGUI.EndDisabledGroup();
 
 
 				// Create custom builder script.

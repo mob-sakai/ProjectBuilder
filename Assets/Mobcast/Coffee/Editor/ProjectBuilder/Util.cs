@@ -147,7 +147,7 @@ namespace Mobcast.Coffee.Build
 			{
 				throw new UnityException(ProjectBuilder.kLogType + "Error : The specified builder could not be found. " + name);
 			}
-			else if (builder.buildApplication && builder.buildTarget != EditorUserBuildSettings.activeBuildTarget)
+			else if (builder.actualBuildTarget != EditorUserBuildSettings.activeBuildTarget)
 			{
 				throw new UnityException(ProjectBuilder.kLogType + "Error : The specified builder's build target is not " + EditorUserBuildSettings.activeBuildTarget);
 			}
