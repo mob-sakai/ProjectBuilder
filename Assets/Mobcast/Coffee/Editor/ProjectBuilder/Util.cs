@@ -19,6 +19,7 @@ namespace Mobcast.Coffee.Build
 	internal class Util : ScriptableSingleton<Util>
 	{
 		const string CUSTOM_BUILDER_TEMPLATE = "ProjectBuilderTemplate";
+		const string EXCLUDE_BUILD_DIR = "__ExcludeBuild";
 
 		public const string OPT_BUILDER = "-builder";
 		public const string OPT_CLOUD_BUILDER = "-bvrbuildtarget";
@@ -259,6 +260,44 @@ namespace Mobcast.Coffee.Build
 			{
 				EditorApplication.Exit(success ? 0 : 1);
 			}
+		}
+
+		/// <summary>ディレクトリをビルドから隔離します.</summary>
+		/// <param name="dir">隔離するディレクトリパス.プロジェクトディレクトリからの相対パスです.</param>
+		public static void ExcludeDirectory (string dir) {
+			DirectoryInfo d = new DirectoryInfo (dir);
+			if (!d.Exists)
+				return;
+
+			if (!Directory.Exists (EXCLUDE_BUILD_DIR))
+				Directory.CreateDirectory (EXCLUDE_BUILD_DIR);
+			MoveDirectory (d.FullName, EXCLUDE_BUILD_DIR + "/" + dir.Replace ("\\", "/").Replace ("/", "~~"));
+
+			AssetDatabase.Refresh();
+		}
+
+		/// <summary>ビルド隔離ディレクトリを戻します.</summary>
+		[InitializeOnLoadMethod]
+		public static void RevertExcludedDirectory () {
+			DirectoryInfo exDir = new DirectoryInfo (EXCLUDE_BUILD_DIR);
+			if (!exDir.Exists)
+				return;
+
+			foreach (DirectoryInfo d in exDir.GetDirectories()) 
+				MoveDirectory (d.FullName, d.Name.Replace ("~~", "/"));
+
+			foreach (FileInfo f in exDir.GetFiles())
+				f.Delete (); 
+
+			exDir.Delete ();
+			AssetDatabase.Refresh();
+		}
+
+		/// <summary>ディレクトリをmetaファイルごと移動させます.</summary>
+		static void MoveDirectory (string from, string to) {
+			Directory.Move (from, to);
+			if (File.Exists (from + ".meta"))
+				File.Move (from + ".meta", to + ".meta");
 		}
 
 	}

@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using System;
+using System.IO;
 using System.Text;
 
 
@@ -34,6 +35,32 @@ namespace Mobcast.Coffee.Build
 			if (GUI.Button (rButton, EditorGUIUtility.FindTexture ("project"), EditorStyles.label)) {
 				// If you select a file, convert to relative path.
 				string path = EditorUtility.OpenFilePanel (title, directory, extension);
+				if (!string.IsNullOrEmpty (path)) {
+					property.stringValue = FileUtil.GetProjectRelativePath (path);
+				}
+			}
+			EditorGUI.EndProperty ();
+		}
+
+
+		public static void DirectoryPathField (Rect position, SerializedProperty property, GUIContent label, string title, params GUILayoutOption[] options)
+		{
+			label = EditorGUI.BeginProperty (position, label, property);
+
+			// TextField (free edit).
+			EditorGUI.BeginChangeCheck ();
+			{
+				position.width -= 14;
+				string newValue = EditorGUI.TextField (position, label, property.stringValue);
+				if (EditorGUI.EndChangeCheck ())
+					property.stringValue = newValue;
+			}
+
+			// Select file button.
+			var rButton = new Rect (position.x + position.width - 1, position.y, 20, 17);
+			if (GUI.Button (rButton, EditorGUIUtility.FindTexture ("project"), EditorStyles.label)) {
+				string directory = 0 < property.stringValue.Length && Directory.Exists(property.stringValue) ? property.stringValue : "Assets/";
+				string path = EditorUtility.OpenFolderPanel (title, directory, "");
 				if (!string.IsNullOrEmpty (path)) {
 					property.stringValue = FileUtil.GetProjectRelativePath (path);
 				}

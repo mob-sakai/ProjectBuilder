@@ -23,6 +23,7 @@ namespace Mobcast.Coffee.Build
 		static GUIContent contentOpen;
 		static GUIContent contentTitle = new GUIContent();
 		static ReorderableList roSceneList;
+		static ReorderableList roExcludeDirectoriesList;
 		static ReorderableList roBuilderList;
 
 		static GUIStyle styleCommand;
@@ -94,6 +95,18 @@ namespace Mobcast.Coffee.Build
 			};
 			roSceneList.headerHeight = 0;
 			roSceneList.elementHeight = 18;
+
+
+			// Exclude Directories List
+			roExcludeDirectoriesList = new ReorderableList(new List<string>(), typeof(string));
+			roExcludeDirectoriesList.drawElementCallback += (rect, index, isActive, isFocused) =>
+				{
+					var element = roExcludeDirectoriesList.serializedProperty.GetArrayElementAtIndex(index);
+					EditorGUIEx.DirectoryPathField(rect, element, GUIContent.none, "Selcet exclude directory in build.");
+				};
+			roExcludeDirectoriesList.headerHeight = 0;
+			roExcludeDirectoriesList.elementHeight = 18;
+
 
 			// Builder list.
 			roBuilderList = new ReorderableList(s_BuildersInProject, typeof(ProjectBuilder));
@@ -300,6 +313,21 @@ namespace Mobcast.Coffee.Build
 						{
 							EditorGUI.indentLevel--;
 							roSceneList.DoLayoutList();
+							EditorGUI.indentLevel++;
+						}
+					}
+
+					// Exclude Directories.
+					EditorGUILayout.LabelField("Exclude Directories");
+					roExcludeDirectoriesList.serializedProperty = serializedObject.FindProperty("excludeDirectories");
+
+					using (new EditorGUILayout.HorizontalScope())
+					{
+						GUILayout.Space(16);
+						using (new EditorGUILayout.VerticalScope())
+						{
+							EditorGUI.indentLevel--;
+							roExcludeDirectoriesList.DoLayoutList();
 							EditorGUI.indentLevel++;
 						}
 					}
