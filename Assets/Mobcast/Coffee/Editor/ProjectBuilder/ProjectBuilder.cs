@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using System.Text;
 
 namespace Mobcast.Coffee.Build
 {
@@ -248,11 +249,61 @@ namespace Mobcast.Coffee.Build
 		{
 			try
 			{
+				AssetBundleManifest oldManifest = null;
+				var manifestPath = Path.Combine(bundleOutputPath, actualBuildTarget.ToString());
+				if(File.Exists(manifestPath))
+				{
+					var manifestAssetBundle = AssetBundle.LoadFromFile(manifestPath);
+					oldManifest = manifestAssetBundle
+						? manifestAssetBundle.LoadAsset<AssetBundleManifest>("assetbundlemanifest")
+						: null;
+				}
+
 				UnityEngine.Debug.Log(kLogType + "BuildAssetBundles is started.");
 
 				Directory.CreateDirectory(bundleOutputPath);
 				BuildAssetBundleOptions opt = (BuildAssetBundleOptions)bundleOptions | BuildAssetBundleOptions.DeterministicAssetBundle;
-				BuildPipeline.BuildAssetBundles(bundleOutputPath, opt, actualBuildTarget);
+				var newManifest = BuildPipeline.BuildAssetBundles(bundleOutputPath, opt, actualBuildTarget);
+
+				var sb = new StringBuilder(kLogType + "AssetBundle report");
+				string[] array;
+				if(oldManifest)
+				{
+					// 差分をログ出力.
+					var oldBundles = new HashSet<string>(oldManifest ? oldManifest.GetAllAssetBundles() : new string[]{});
+					var newBundles = new HashSet<string>(newManifest.GetAllAssetBundles());
+
+					// 新規
+					array = newBundles.Except(oldBundles).ToArray();
+					sb.AppendFormat("\n[Added]: {0}\n", array.Length);
+					foreach(var bundleName in array)
+						sb.AppendLine("  > " + bundleName);
+					
+					// 削除
+					array = oldBundles.Except(newBundles).ToArray();
+					sb.AppendFormat("\n[Deleted]: {0}\n", array.Length);
+					foreach(var bundleName in array)
+						sb.AppendLine("  > " + bundleName);
+					
+					// 更新
+					array = oldBundles
+						.Intersect(newBundles)
+						.Where(x=>!Hash128.Equals( oldManifest.GetAssetBundleHash(x), newManifest.GetAssetBundleHash(x)))
+						.ToArray();
+					sb.AppendFormat("\n[Updated]: {0}\n", array.Length);
+					foreach(var bundleName in array)
+						sb.AppendLine("  > " + bundleName);
+				}
+				else
+				{
+					// 新規
+					array = newManifest.GetAllAssetBundles();
+					sb.AppendFormat("\n[Added]: {0}\n", array.Length);
+					foreach(var bundleName in array)
+						sb.AppendLine("  > " + bundleName);
+				}
+				UnityEngine.Debug.Log(sb);
+
 
 				if (copyToStreamingAssets)
 				{
