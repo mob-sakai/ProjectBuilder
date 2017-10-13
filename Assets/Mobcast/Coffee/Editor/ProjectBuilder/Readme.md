@@ -5,7 +5,8 @@ ProjectBuilder
 
 A tool for easy automating and customizing build process for Unity.
 
-![image](https://user-images.githubusercontent.com/12690315/30955730-9db74e00-a46f-11e7-9628-ef5cb34a336f.png)
+### Basic & Advanced Aplication Build Settings
+![image](https://user-images.githubusercontent.com/12690315/31534409-c342b2a4-b031-11e7-8fea-75bb916ef944.png)
 
 * Build target
     * Build artifact is generated in `<project_dir>/build` directory or file.
@@ -17,24 +18,36 @@ A tool for easy automating and customizing build process for Unity.
 * Development build option(Development & Script debugging)
 * Defined Symbols
 * Enable/Disable scenes in build
+* Exclude directory in build
 * Application version
 * Internal version
     * (Android) BundleVersionCode
     * (iOS) BuildNumber
-* Android platform support
-    * Keystore infomation
-* iOS platform support
-    * XCode modifier
-        * Languages
-        * Frameworks
-        * Services
-        * Entitlement file
-    * Signing & Provisioning profile
-    * Generate exportOptions.plist
-* AssetBundle build support
-    * Supports compression options
-    * Build artifacts are generated in `<project_dir>/AssetBundles` directory
-    * Copy to StreamingAssets directory
+
+### AssetBundle Build Settings
+![image](https://user-images.githubusercontent.com/12690315/31534416-cc880864-b031-11e7-8575-1010062d385e.png)
+
+* Compression options
+* Build artifacts are generated in `<project_dir>/AssetBundles` directory
+* Copy to StreamingAssets directory
+
+
+### Android Settings
+![image](https://user-images.githubusercontent.com/12690315/31534438-e913876a-b031-11e7-9317-204c13a960e8.png)
+
+* Keystore infomation
+
+
+### iOS Settings
+![image](https://user-images.githubusercontent.com/12690315/31534427-d693dd38-b031-11e7-96ba-984722562aff.png)
+
+* XCode modifier
+    * Languages
+    * Frameworks
+    * Services
+    * Entitlement file
+* Signing & Provisioning profile
+* Generate exportOptions.plist
 
 
 
@@ -133,6 +146,11 @@ public BuildTargetSettings_WebGL webGlSettings = new BuildTargetSettings_WebGL()
 
 
 ## Release Notes
+
+### ver.0.10.0:
+
+* Feature: Exclude directory in build.
+* Feature: AssetBundle build report(Add/Delete/Update).
 
 ### ver.0.9.3:
 
