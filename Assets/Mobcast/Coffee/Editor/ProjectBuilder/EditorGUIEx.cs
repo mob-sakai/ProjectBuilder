@@ -36,8 +36,9 @@ namespace Mobcast.Coffee.Build
 				// If you select a file, convert to relative path.
 				string path = EditorUtility.OpenFilePanel (title, directory, extension);
 				if (!string.IsNullOrEmpty (path)) {
-					property.stringValue = FileUtil.GetProjectRelativePath (path);
+					property.stringValue = path.Replace(Environment.CurrentDirectory + Path.DirectorySeparatorChar, "");
 				}
+				GUIUtility.keyboardControl = 0;
 			}
 			EditorGUI.EndProperty ();
 		}
@@ -62,8 +63,9 @@ namespace Mobcast.Coffee.Build
 				string directory = 0 < property.stringValue.Length && Directory.Exists(property.stringValue) ? property.stringValue : "Assets/";
 				string path = EditorUtility.OpenFolderPanel (title, directory, "");
 				if (!string.IsNullOrEmpty (path)) {
-					property.stringValue = FileUtil.GetProjectRelativePath (path);
+					property.stringValue = path.Replace(Environment.CurrentDirectory + Path.DirectorySeparatorChar, "");
 				}
+				GUIUtility.keyboardControl = 0;
 			}
 			EditorGUI.EndProperty ();
 		}

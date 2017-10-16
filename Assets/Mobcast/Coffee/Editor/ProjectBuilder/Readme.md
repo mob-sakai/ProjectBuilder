@@ -147,6 +147,10 @@ public BuildTargetSettings_WebGL webGlSettings = new BuildTargetSettings_WebGL()
 
 ## Release Notes
 
+### ver.0.10.1:
+
+* Fixed: When select file path not under project directory, value to be empty.
+
 ### ver.0.10.0:
 
 * Feature: Exclude directory in build.
