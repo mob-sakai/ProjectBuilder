@@ -19,6 +19,7 @@ namespace Mobcast.Coffee.Build
 		ProjectBuilder[] targets;
 		SerializedObject serializedObject;
 
+		const string kPrefsKeyLastSelected = "ProjectBuilderEditor_LastSelected";
 
 		static GUIContent contentOpen;
 		static GUIContent contentTitle = new GUIContent();
@@ -154,7 +155,36 @@ namespace Mobcast.Coffee.Build
 		/// </summary>
 		void OnEnable()
 		{
-			SelectBuilder(Selection.objects.OfType<ProjectBuilder>().ToArray());
+			targets = null;
+
+			// 最後に選択したビルダーが存在する.
+			string path = AssetDatabase.GUIDToAssetPath(PlayerPrefs.GetString(kPrefsKeyLastSelected + EditorUserBuildSettings.activeBuildTarget));
+			if (!string.IsNullOrEmpty(path))
+			{
+				ProjectBuilder builder = AssetDatabase.LoadAssetAtPath<ProjectBuilder>(path);
+				if (builder)
+				{
+					SelectBuilder(new []{ builder });
+				}
+			}
+			if (targets == null)
+			{
+				// 選択しているオブジェクト内にビルダーが存在する
+				if(Selection.objects.OfType<ProjectBuilder>().Any())
+				{
+					SelectBuilder(Selection.objects.OfType<ProjectBuilder>().ToArray());
+				}
+				else
+				{
+					// プロジェクト内にビルダーが存在する
+					var builders = Util.GetAssets<ProjectBuilder>();
+					if (builders.Any())
+					{
+						SelectBuilder(builders.Take(1).ToArray());
+					}
+				}
+			}
+				
 			Selection.selectionChanged += OnSelectionChanged;
 			minSize = new Vector2(300, 300);
 		}
@@ -188,6 +218,14 @@ namespace Mobcast.Coffee.Build
 			contentTitle.text = 0 < targets.Length
 				? targets.Select(x => "  " + x.name).Aggregate((a, b) => a + "\n" + b)
 				: "";
+
+			// 最後に選択したビルダーアセットを記憶.
+			ProjectBuilder lastSelected = targets.FirstOrDefault(x => x.buildTarget == EditorUserBuildSettings.activeBuildTarget);
+			if (lastSelected)
+			{
+				PlayerPrefs.SetString(kPrefsKeyLastSelected + EditorUserBuildSettings.activeBuildTarget, AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(lastSelected)));
+				PlayerPrefs.Save();
+			}
 		}
 
 		void OnSelectionChanged()
