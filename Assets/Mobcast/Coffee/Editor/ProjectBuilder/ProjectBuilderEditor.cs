@@ -510,6 +510,12 @@ namespace Mobcast.Coffee.Build
 					Util.CreateCustomProjectBuilder();
 				}
 
+				// Convert to JSON.
+				if (GUILayout.Button("Convert to JSON (console log)"))
+				{
+					UnityEngine.Debug.Log(JsonUtility.ToJson(builder, true));
+				}
+
 				// Available builders.
 				GUILayout.Space(10);
 				GUILayout.Label("Available Project Builders", EditorStyles.boldLabel);

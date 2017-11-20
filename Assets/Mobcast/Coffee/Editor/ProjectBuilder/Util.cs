@@ -24,6 +24,7 @@ namespace Mobcast.Coffee.Build
 		public const string OPT_BUILDER = "-builder";
 		public const string OPT_CLOUD_BUILDER = "-bvrbuildtarget";
 		public const string OPT_APPEND_SYMBOL = "-appendSymbols";
+		public const string OPT_OVERRIDE = "-override";
 		//		public const string OPT_NO_BUILD = "-noBuild";
 		//		public const string OPT_RESUME = "-resume";
 		public const string OPT_DEV_BUILD_NUM = "-devBuildNumber";
@@ -151,6 +152,18 @@ namespace Mobcast.Coffee.Build
 			else if (builder.actualBuildTarget != EditorUserBuildSettings.activeBuildTarget)
 			{
 				throw new UnityException(ProjectBuilder.kLogType + "Error : The specified builder's build target is not " + EditorUserBuildSettings.activeBuildTarget);
+			}
+			else
+			{
+				UnityEngine.Debug.Log(ProjectBuilder.kLogType + "Builder selected : " + builder);
+			}
+
+			// 上書き用json
+			string json;
+			if (args.TryGetValue(Util.OPT_OVERRIDE, out json))
+			{
+				UnityEngine.Debug.Log(ProjectBuilder.kLogType + "Override builder with json as following\n" + json);
+				JsonUtility.FromJsonOverwrite(json, builder);
 			}
 			return builder;
 		}
