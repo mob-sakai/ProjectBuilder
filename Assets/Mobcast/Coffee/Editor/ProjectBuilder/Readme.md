@@ -76,13 +76,23 @@ A tool for easy automating and customizing build process for Unity.
 * The ProjectBuilder is accessible from the command line.  
 It is useful when using CI tools such as Jenkins.
 * The following command option executes the build with the specified builder.  
-`-batchmode -buildTarget <ios|android|webgl> -executeMethod Mobcast.Coffee.Build.ProjectBuilder.Build -builder <builder_name> [-devBuildNumber <number>] [-appendSymbols 'INCLUDE_SYMBOL;!EXCLUDE_SYMBOL;...']`
+`-batchmode -buildTarget <ios|android|webgl> -executeMethod Mobcast.Coffee.Build.ProjectBuilder.Build -builder <builder_name> [-devBuildNumber <number>] [-appendSymbols 'INCLUDE_SYMBOL;!EXCLUDE_SYMBOL;...'] [-override <builder_json>]`
 
 * For example, The following command option executes the build for iOS with 'Develop_iOS' builder asset, with `DEBUG_MODE` symbol.  
 `-batchmode -buildTarget ios -executeMethod Mobcast.Coffee.Build.ProjectBuilder.Build -builder 'Default iOS' -appendSymbols DEBUG_MODE`
 
 Note: **DO NOT USE** `-quit` option.  
 For other infomation, see this link : <https://docs.unity3d.com/Manual/CommandLineArguments.html>
+
+
+#### Override builder with json
+
+`-override <builder_json>` to override builder setting. For example as following.
+* `-override "{ \"applicationIdentifier\":\"com.test.app\", \"version\":\"1.1.0\", \"defineSymbols\":\"!DEVELOPMENT_BUILD;FAKE_PURCHASE\" }"`
+    * Override application identifier to "com.test.app"
+    * Override version to '1.1.0'
+    * Disable symbol 'DEVELOPMENT_BUILD' and enable symbol 'FAKE_PURCHASE'
+* To override other parameters, convert the builder to json from `Convert to JSON (console log)` in project builder window.
 
 
 
@@ -147,6 +157,12 @@ public BuildTargetSettings_WebGL webGlSettings = new BuildTargetSettings_WebGL()
 
 ## Release Notes
 
+### ver.1.0.0:
+
+* Feature: Override builder with json on command line.
+* Feature: Memorize last selected builder each BuildTarget.
+* Fixed: `Enable/Disable scenes in build` is not reflected.
+
 ### ver.0.10.1:
 
 * Fixed: When select file path not under project directory, value to be empty.
@@ -199,7 +215,7 @@ public BuildTargetSettings_WebGL webGlSettings = new BuildTargetSettings_WebGL()
 ### ver.0.5.0:
 
 * Feature: Supports Unity Cloud Build.
-* Feature: Enable/Disable scenes for build.
+* Feature: Enable/Disable scenes in build.
 
 
 ### ver.0.4.0:
@@ -235,3 +251,11 @@ public BuildTargetSettings_WebGL webGlSettings = new BuildTargetSettings_WebGL()
 * Feature: (Android) Keystore information.
 * Feature: Custom build pipeline.
 * Feature: Export `BUILD_VERSION` for CI.
+
+
+
+
+## See Also
+
+* GitHub Page : https://github.com/mob-sakai/ProjectBuilder
+* Issue tracker : https://github.com/mob-sakai/ProjectBuilder/issues
