@@ -228,10 +228,19 @@ namespace Mobcast.Coffee.Build
 			File.WriteAllText(Path.Combine(Util.projectDir, "BUILD_VERSION"), PlayerSettings.bundleVersion);
 
 			// Scene Settings.
-			EditorBuildSettings.scenes = EditorBuildSettings.scenes
-				.Where(x => x.enabled || scenes.Any(y => y.enable && y.name == Path.GetFileName(x.path)))
-				.Where(x => !scenes.Any(y => !y.enable && y.name == Path.GetFileName(x.path)))
-				.ToArray();
+			EditorBuildSettingsScene[] buildSettingsScenes = EditorBuildSettings.scenes;
+			for (int i = 0; i < buildSettingsScenes.Length;i++)
+			{
+				var scene = buildSettingsScenes[i];
+				var setting = scenes.FirstOrDefault(x =>x.name == Path.GetFileName(scene.path));
+				if(setting != null)
+				{
+					scene.enabled = setting.enable;
+				}
+					
+				buildSettingsScenes[i] = scene;
+			}
+			EditorBuildSettings.scenes = buildSettingsScenes;
 
 			// Build target settings.
 			iosSettings.ApplySettings(this);
@@ -349,6 +358,7 @@ namespace Mobcast.Coffee.Build
 
 				// Scenes to build.
 				string[] scenesToBuild = EditorBuildSettings.scenes.Where(x => x.enabled).Select(x => x.path).ToArray();
+				UnityEngine.Debug.Log(kLogType + "Scenes to build : " + scenesToBuild.Aggregate((a,b)=>a+", "+b));
 
 				// Start build.
 				UnityEngine.Debug.Log(kLogType + "BuildPlayer is started. Defined symbols : " + PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup));
