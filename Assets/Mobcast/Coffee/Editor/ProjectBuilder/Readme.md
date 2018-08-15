@@ -85,16 +85,18 @@ Note: **DO NOT USE** `-quit` option.
 For other infomation, see this link : <https://docs.unity3d.com/Manual/CommandLineArguments.html>
 
 
-#### Override builder with json
+#### Override builder settings with json
 
-`-override <builder_json>` to override builder setting. For example as following.
+You can add option `-override <builder_json>` to override builder settings. For example as follows.
+
 * `-override "{ \"applicationIdentifier\":\"com.test.app\", \"version\":\"1.1.0\", \"defineSymbols\":\"!DEVELOPMENT_BUILD;FAKE_PURCHASE\" }"`
     * Override application identifier to "com.test.app"
-    * Override version to '1.1.0'
+    * Override version to "1.1.0"
     * Disable symbol 'DEVELOPMENT_BUILD' and enable symbol 'FAKE_PURCHASE'
-* To override other parameters, convert the builder to json from `Convert to JSON (console log)` in project builder window.
 
-
+* To override other parameters, convert the builder to json from `Convert to JSON (console log)` button in project builder window.  
+![image](https://user-images.githubusercontent.com/12690315/33050649-548f8e9a-cea9-11e7-9911-a68713d126bd.png)
+![image](https://user-images.githubusercontent.com/12690315/33050758-db2623e2-cea9-11e7-8d74-0dc45f1d429f.png)
 
 
 ## Build on Unity Cloud Build(UCB)
@@ -108,12 +110,13 @@ For example, a build setting labeled 'Default iOS' on UCB, selects builder asset
 
 ## How to customize the builder for your project?
 
-1. Click `Create Custom Project Builder Script`
-1. Save script with dialog.
-1. Implement the script.  
-The serialized field is not only displayed in the inspector, it can also be used in PostProcessBuild as following.
-
+1. Click `Create Custom Project Builder Script`  
+![image](https://user-images.githubusercontent.com/12690315/33050314-a64f5db6-cea7-11e7-9f3b-e0b0166e7e1a.png)
+1. Save custom project builder script with dialog.
+1. Implement the script.
+    * The serialized field is not only displayed in the inspector, it can also be used in PostProcessBuild as follows.  
 ![image](https://user-images.githubusercontent.com/12690315/28651867-64891a28-72bf-11e7-911a-f7f13a371def.png)
+    * With `Util.currentBuilder`, you can get the builder used to build.
 
 ```cs
 [SerializeField] string stringParameter;
@@ -132,7 +135,7 @@ protected static void OnPostProcessBuild(BuildTarget target, string path)
 
 ## How to add a supported build target to build?
 
-* Implement `IBuildTargetSettings` interface as following for build targets you need.
+* Implement `IBuildTargetSettings` interface as follows for BuildTarget you need.
 * Add `System.Serializable` attribute to the class to be serializable.
 
 ```cs
@@ -147,7 +150,7 @@ public class BuildTargetSettings_WebGL : IBuildTargetSettings
 }
 ```
 
-* Add serialized field to `ProjectBuilder` or `Custom ProjectBuilder` as following.
+* Add serialized field to `ProjectBuilder` or `Custom ProjectBuilder` as follows.
 ```cs
 public BuildTargetSettings_WebGL webGlSettings = new BuildTargetSettings_WebGL();
 ```
