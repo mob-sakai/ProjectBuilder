@@ -362,6 +362,23 @@ namespace Mobcast.Coffee.Build
 
 				// Start build.
 				UnityEngine.Debug.Log(kLogType + "BuildPlayer is started. Defined symbols : " + PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup));
+#if UNITY_2018_1_OR_NEWER
+				var buildReport = BuildPipeline.BuildPlayer(scenesToBuild, outputFullPath, actualBuildTarget, opt);
+
+				// Revert excluded directories.
+				Util.RevertExcludedDirectory();
+
+				if (buildReport.summary.result == UnityEditor.Build.Reporting.BuildResult.Succeeded)
+				{
+					UnityEngine.Debug.Log(kLogType + "BuildPlayer is finished successfuly.");
+					Util.RevealOutputInFinder(outputFullPath);
+				}
+				else
+				{
+					UnityEngine.Debug.LogError(kLogType + "BuildPlayer is failed : " + buildReport.summary.result);
+					return false;
+				}
+#else
 				string errorMsg = BuildPipeline.BuildPlayer(scenesToBuild, outputFullPath, actualBuildTarget, opt);
 
 				// Revert excluded directories.
@@ -377,6 +394,7 @@ namespace Mobcast.Coffee.Build
 					UnityEngine.Debug.LogError(kLogType + "BuildPlayer is failed : " + errorMsg);
 					return false;
 				}
+#endif
 			}
 			return true;
 		}
